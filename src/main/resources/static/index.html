@@ -1,0 +1,158 @@
+<!-- © Copyright 2015 Paul Thomas <paul@stackfull.com>. All Rights Reserved. -->
+<!doctype html>
+<html>
+	<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Velocity Preview</title>
+    <link rel="stylesheet" href="webjars/bootswatch-paper/3.3.1+2/css/bootstrap.css">
+    <style>
+      html, body, .container, .container>.row, .container>.row>div, .panel-body {
+        height: 100%;
+        position: relative;
+      }
+      .container>.row>div>div {
+        top: 15px;
+        bottom: 0;
+        left: 15px;
+        right: 15px;
+        position: absolute;
+      }
+      iframe {
+        height: 100%;
+        width: 100%;
+      }
+      .editor {
+        min-height: 100px;
+      }
+    </style>
+    
+  </head>
+  <body>
+
+    <div class="container">
+      <div class="row">
+      	<div class="col-sm-6">
+          <div class="panel-group" id="edit">
+          	<div class="panel panel-default">
+              <div class="panel-heading">
+              	<h4 class="panel-title">
+                  <a href="#collapseTemplate" data-toggle="collapse" data-parent="#edit">Template</a>
+                </h4>
+              </div>
+              <div class="panel-collapse collapse in" id="collapseTemplate">
+                <div class="panel-body editor" id="templateEditor"></div>
+              </div>
+            </div>
+          	<div class="panel panel-default">
+              <div class="panel-heading">
+              	<h4 class="panel-title">
+                  <a href="#collapseData" data-toggle="collapse" data-parent="#edit">Data</a>
+                </h4>
+              </div>
+              <div class="panel-collapse collapse" id="collapseData">
+                <div class="panel-body editor" id="dataEditor">{}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      	<div class="col-sm-6">
+          <div class="panel panel-default">
+            <div class="panel-heading">
+              <div class="btn-group pull-right" data-toggle="buttons">
+                <label class="btn btn-xs btn-primary active">
+                  <input type="radio" name="preview" id="html" autocomplete="off" checked>HTML
+                </label>
+                <label class="btn btn-xs btn-primary">
+                  <input type="radio" name="preview" id="text" autocomplete="off">Text
+                </label>
+              </div>
+              <h4 class="panel-title">Preview</h4>
+            </div>
+            <div class="panel-body" id="preview">
+              PREVIEW
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="webjars/jquery/1.11.1/jquery.js"></script>
+    <script src="webjars/bootswatch-paper/3.3.1+2/js/bootstrap.js"></script>
+    <script src="webjars/ace/01.08.2014/src/ace.js"></script>
+    <script src="webjars/lodash/2.4.1-6/lodash.js"></script>
+    <script>
+      var EDITOR_MODES = {'template': 'velocity', 'data': 'json'};
+      var previewMode = 'html';
+      var content = '';
+
+      var editors = _.object(_.map(EDITOR_MODES, function(mode, name) {
+        var editor = ace.edit(name+'Editor');
+        editor.setTheme("ace/theme/eclipse");
+        editor.getSession().setMode("ace/mode/"+mode);
+        return [name, editor];
+      }));
+
+      function resizePanels() {
+        $('.editor').height($(window).height() - 146);
+        $('#preview iframe').height($(window).height() - 106);
+      }
+
+      function noErrors(editor) {
+        return _.isEmpty(editor.getSession().getAnnotations());
+      }
+
+      function storeEditors() {
+        localStorage.setItem('template', editors.template.getValue());
+        localStorage.setItem('data', editors.data.getValue());
+      }
+
+      function updatePreview() {
+        if (previewMode === 'html') {
+          var doc = $('#preview')
+            .empty()
+            .append('<iframe src="about:blank"></iframe>')
+            .find('iframe')[0].contentWindow.document;
+          doc.open();
+          doc.write(content);
+          doc.close();
+          resizePanels();
+        } else {
+          $('#preview').text(content);
+        }
+      }
+
+      var onChange = _.debounce(function() {
+        storeEditors();
+        if (_.all(editors, noErrors)) {
+          $.post('api/v1/convert', {
+            template: editors.template.getValue(),
+            data: editors.data.getValue()
+          }).done(function(c) {
+            content = c;
+            updatePreview();
+          });
+        }
+      }, 1000);
+
+      _.each(editors, function(editor) {
+        editor.getSession().on('change', onChange);
+      });
+
+      $('input[name="preview"]').change(function(e) {
+        previewMode = e.target.id;
+        updatePreview();
+      });
+
+      if(!localStorage.getItem('template')) {
+        storeEditors();
+      } else {
+        editors.template.setValue(localStorage.getItem('template'));
+        editors.data.setValue(localStorage.getItem('data'));
+      }
+      resizePanels();
+      $(window).resize(resizePanels);
+
+    </script>
+  </body>
+</html>
+
