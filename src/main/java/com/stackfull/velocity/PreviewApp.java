@@ -6,6 +6,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
+import org.apache.velocity.tools.generic.DateTool;
+import org.apache.velocity.tools.generic.NumberTool;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -41,6 +43,10 @@ public class PreviewApp {
       e.printStackTrace();
     }
     VelocityContext ctx = new VelocityContext(o);
+    DateTool dateTool = new DateTool();
+    ctx.put("dateTool", dateTool);
+    NumberTool numberTool = new NumberTool();
+    ctx.put("numberTool", numberTool);
     StringWriter writer = new StringWriter();
     velocityEngine.evaluate(ctx, writer, LOG_TAG, template);
     return writer.toString();
