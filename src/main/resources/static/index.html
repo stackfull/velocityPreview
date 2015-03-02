@@ -17,9 +17,12 @@
         right: 15px;
         position: absolute;
       }
-      iframe {
+      iframe, pre {
         height: 100%;
         width: 100%;
+      }
+      pre {
+        line-height: 1;
       }
       .editor {
         min-height: 100px;
@@ -94,7 +97,7 @@
 
       function resizePanels() {
         $('.editor').height($(window).height() - 146);
-        $('#preview iframe').height($(window).height() - 106);
+        $('#preview>iframe').height($(window).height() - 106);
       }
 
       function noErrors(editor) {
@@ -117,7 +120,9 @@
           doc.close();
           resizePanels();
         } else {
-          $('#preview').text(content);
+          $('#preview')
+            .empty()
+            .append($('<pre>').text(content));
         }
       }
 
