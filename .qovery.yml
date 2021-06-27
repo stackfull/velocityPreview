@@ -1,0 +1,11 @@
+---
+application:
+  name: "velocitypreview"
+  project: "my-first-project"
+  organization: "QoveryCommunity"
+routers:
+- name: "main-velocitypreview"
+  routes:
+  - application_name: "velocitypreview"
+    paths:
+    - "/*"
