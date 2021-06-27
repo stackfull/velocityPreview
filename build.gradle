@@ -1,9 +1,10 @@
 buildscript {
     ext {
-        springBootVersion = '1.2.1.RELEASE'
+        springBootVersion = '1.4.7.RELEASE'
     }
     repositories {
         mavenCentral()
+        maven { url 'https://repo.spring.io/libs-snapshot' }
     }
     dependencies {
         classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
@@ -12,7 +13,8 @@ buildscript {
 
 
 apply plugin: 'java'
-apply plugin: 'spring-boot'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'io.spring.dependency-management'
 
 jar {
   baseName = 'velocityPreview'
@@ -21,6 +23,7 @@ jar {
 
 repositories {
     mavenCentral()
+    maven { url 'https://repo.spring.io/libs-snapshot' }
 }
 
 // In this section you declare the dependencies for your production and test code
@@ -32,8 +35,9 @@ dependencies {
     compile 'org.webjars:bootswatch-paper:3.3.1+2'
     compile 'org.webjars:ace:01.08.2014'
     compile 'org.webjars:lodash:2.4.1-6'
+    compile 'javax.xml.bind:jaxb-api:2.3.0'
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '2.0'
+    gradleVersion = '4.7'
 }
